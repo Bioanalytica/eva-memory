@@ -1,4 +1,4 @@
-# Eva Memory
+# Engram Vault Architecture (EVA) Memory
 
 Three-layer persistent memory for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). Memories survive across sessions using markdown files, a Neo4j graph database, and optional ChromaDB semantic search.
 
