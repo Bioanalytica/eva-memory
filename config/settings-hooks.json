@@ -1,0 +1,53 @@
+{
+  "_comment": "EVA Memory hooks — merge into ~/.claude/settings.json",
+  "_instructions": "Copy the 'hooks' and 'env' sections into your existing settings.json. If you already have hooks defined, add these entries to the existing arrays. Replace $EVA_MEMORY_DIR with your actual path, or set it in the 'env' block.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run $EVA_MEMORY_DIR/hooks/eva-session-start.ts",
+            "timeout": 15000
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run $EVA_MEMORY_DIR/hooks/eva-pre-compact.ts",
+            "timeout": 10000
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run $EVA_MEMORY_DIR/hooks/eva-session-end.ts",
+            "timeout": 10000
+          }
+        ]
+      }
+    ]
+  },
+  "env": {
+    "EVA_MEMORY_DIR": "/path/to/eva-memory",
+    "EVA_NEO4J_URI": "bolt://localhost:7687",
+    "EVA_NEO4J_PASS": "your-neo4j-password",
+    "EVA_STORE_PATH": "/path/to/eva-data",
+    "EVA_RECALL_MAX_TOKENS": "400",
+    "EVA_RECALL_MIN_IMPORTANCE": "3",
+    "EVA_RECALL_MAX_RESULTS": "5",
+    "EVA_INJECT_INSTRUCTIONS": "true",
+    "EVA_COMMAND_TIMEOUT_MS": "10000"
+  }
+}

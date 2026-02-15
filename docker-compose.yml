@@ -1,0 +1,83 @@
+# Eva Memory - Docker Compose
+# Brings up Neo4j (required) + ChromaDB (optional semantic search) + Ollama (optional embeddings).
+#
+# Usage:
+#   cp .env.example .env        # fill in your values
+#   docker compose up -d        # start Neo4j + ChromaDB
+#   uv run scripts/init_schema.py
+#
+# To include Ollama for local embeddings:
+#   docker compose --profile gpu up -d
+
+services:
+  # --------------------------------------------------------------------------
+  # Neo4j — Graph database for memory storage, relationships, and full-text search
+  # Required. This is the primary storage layer.
+  # --------------------------------------------------------------------------
+  neo4j:
+    image: neo4j:5.26.0
+    container_name: eva-neo4j
+    restart: unless-stopped
+    environment:
+      NEO4J_AUTH: neo4j/${EVA_NEO4J_PASS:-changeme}
+    ports:
+      - "7474:7474"   # browser UI (http://localhost:7474)
+      - "7687:7687"   # bolt protocol (used by memory.py)
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+    networks:
+      - eva
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:7474 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # --------------------------------------------------------------------------
+  # ChromaDB — Vector database for semantic search via embeddings
+  # Optional. Enables similarity-based memory retrieval and duplicate detection.
+  # --------------------------------------------------------------------------
+  chroma:
+    image: chromadb/chroma:1.4.1
+    container_name: eva-chroma
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma-data:/data
+    networks:
+      - eva
+
+  # --------------------------------------------------------------------------
+  # Ollama — Local embedding model server
+  # Optional. Only needed if using ChromaDB for semantic search.
+  # Activated with: docker compose --profile gpu up -d
+  # --------------------------------------------------------------------------
+  ollama:
+    image: ollama/ollama
+    profiles: ["gpu"]
+    container_name: eva-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - eva
+    # Uncomment for NVIDIA GPU passthrough:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - capabilities: [gpu]
+
+networks:
+  eva:
+    name: eva-memory
+
+volumes:
+  neo4j-data:
+  neo4j-logs:
+  chroma-data:
+  ollama-data:
